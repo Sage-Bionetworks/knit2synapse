@@ -1,5 +1,6 @@
 #' Allow users to leverage knit3 when constructing Synapse Wiki content
 #' 
+#' @export
 #' @param File path to a local .Rmd file which to knit
 #' @param owner A Synapse object which will own the resulting WikiPage (usually a Project, Folder, or File)
 #' @param parentWikiId If the resulting WikiPage is to be a subpage of another WikiPage, this is the id for the parent WikiPage (NOTE: owner is still required)
