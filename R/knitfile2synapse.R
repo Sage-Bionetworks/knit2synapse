@@ -7,7 +7,7 @@
 #' @param wikiName A title for the resulting WikiPage - will default to the file name without the .Rmd extension
 #' @param overwrite Only if owner specified and parentWikiId is NULL - flag for whether or not to overwrite the previous root WikiPage (if it exists)
 #' @return a WikiPage object as defined in the synapseClient
-knitit <- function(file, owner, parentWikiId=NULL, wikiName=NULL, overwrite=FALSE){
+knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, overwrite=FALSE){
   ## CHECK TO MAKE SURE FILE EXISTS
   file <- path.expand(file)
   if( !file.exists(file) ){
