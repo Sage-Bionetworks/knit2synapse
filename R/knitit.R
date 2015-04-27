@@ -15,20 +15,20 @@ knitit <- function(file, owner, parentWikiId=NULL, wikiName=NULL, overwrite=FALS
   }
   
   ## IF NO WIKI NAME GIVEN, DEFAULT TO FILE NAME WITHOUT EXTENSION
-  fName <- basename(file_path_sans_ext(file))
+  fName <- basename(stringr::file_path_sans_ext(file))
   if( is.null(wikiName) ){
     wikiName <- fName
   }
   
   ## IF OWNER IS CHARACTER, TRY TO GET FROM SYNAPSE
   if( is.character(owner) & length(owner) == 1 ){
-    owner <- synGet(owner, downloadFile=FALSE)
+    owner <- synapseClient::synGet(owner, downloadFile=FALSE)
   }
   
   #####
   ## SET SYNAPSE-SPECIFIC MARKDOWN HOOKS
   #####
-  render_markdown()
+  knitr::render_markdown()
   
   ## PLOTS
   hook_synapseMdSyntax_plot <- function(x, options){
@@ -91,11 +91,13 @@ knitit <- function(file, owner, parentWikiId=NULL, wikiName=NULL, overwrite=FALS
       synPlotMdOpts <- paste(synPlotMdOpts, "&scale=100", sep="")
     }
     
-    paste("${image?fileName=", curlPercentEncode(basename(paste(x, collapse=".")), codes=urlEncodings), synPlotMdOpts, "}\n", sep="")
+    paste("${image?fileName=", 
+          RCurl::curlPercentEncode(basename(paste(x, collapse=".")), codes=urlEncodings), 
+          synPlotMdOpts, "}\n", sep="")
   }
-  knit_hooks$set(plot=hook_synapseMdSyntax_plot)
-  opts_chunk$set(tidy=FALSE)
-  opts_chunk$set(error=FALSE)
+  knitr::knit_hooks$set(plot=hook_synapseMdSyntax_plot)
+  knitr::opts_chunk$set(tidy=FALSE)
+  knitr::opts_chunk$set(error=FALSE)
   
   
   ## CREATE TEMPORARY OUTPTU DIRECTORY FOR MD AND PLOTS
@@ -103,55 +105,55 @@ knitit <- function(file, owner, parentWikiId=NULL, wikiName=NULL, overwrite=FALS
   dir.create(knitDir)
   knitPlotDir <- file.path(knitDir, "plots/")
   dir.create(knitPlotDir)
-  opts_chunk$set(fig.path = knitPlotDir)
+  knitr::opts_chunk$set(fig.path = knitPlotDir)
   
   mdName <- file.path(knitDir, paste(fName, ".md", sep=""))
   
-  mdFile <- knit(file,
-                 envir=parent.frame(n=2),
-                 output=mdName)
+  mdFile <- knitr::knit(file,
+                        envir=parent.frame(n=2),
+                        output=mdName)
   att <- list.files(knitPlotDir, full.names=TRUE)
   
   if( is.null(parentWikiId) ){ ## doesn't have a parentWiki
     if( length(att) > 0 ){ ## has attachments
-      w <- WikiPage(owner=owner, 
-                    title=wikiName, 
-                    attachments=as.list(att),
-                    markdown=readChar(mdFile, file.info(mdFile)$size))
+      w <- synapseClient::WikiPage(owner=owner, 
+                                   title=wikiName, 
+                                   attachments=as.list(att),
+                                   markdown=readChar(mdFile, file.info(mdFile)$size))
     } else{ ## doesn't have attachments
-      w <- WikiPage(owner=owner, 
-                    title=wikiName, 
-                    markdown=readChar(mdFile, file.info(mdFile)$size))
+      w <- synapseClient::WikiPage(owner=owner, 
+                                   title=wikiName, 
+                                   markdown=readChar(mdFile, file.info(mdFile)$size))
     }
     
     if( overwrite ){
       ## TRY TO STORE
-      tmp <- try(synStore(w), silent=TRUE)
+      tmp <- try(synapseClient::synStore(w), silent=TRUE)
       if( class(tmp) == "try-error" ){
-        tmp <- synGetWiki(owner)
-        tmp <- synDelete(tmp)
-        w <- synStore(w)
+        tmp <- synapseClient::synGetWiki(owner)
+        tmp <- synapseClient::synDelete(tmp)
+        w <- synapseClient::synStore(w)
       } else{
         w <- tmp
       }
     } else{
-      w <- synStore(w)
+      w <- synapseClient::synStore(w)
     }
     
   } else{ ## has a parentWiki
     if( length(att) > 0 ){ ## has attachments
-      w <- WikiPage(owner=owner, 
-                    title=wikiName, 
-                    attachments=as.list(att),
-                    markdown=readChar(mdFile, file.info(mdFile)$size),
-                    parentWikiId=parentWikiId)
+      w <- synapseClient::WikiPage(owner=owner, 
+                                   title=wikiName, 
+                                   attachments=as.list(att),
+                                   markdown=readChar(mdFile, file.info(mdFile)$size),
+                                   parentWikiId=parentWikiId)
     } else{ ## doesn't have attachments
-      w <- WikiPage(owner=owner, 
-                    title=wikiName, 
-                    markdown=readChar(mdFile, file.info(mdFile)$size),
-                    parentWikiId=parentWikiId)
+      w <- synapseClient::WikiPage(owner=owner, 
+                                   title=wikiName, 
+                                   markdown=readChar(mdFile, file.info(mdFile)$size),
+                                   parentWikiId=parentWikiId)
     }
-    w <- synStore(w)
+    w <- synapseClient::synStore(w)
   }
   cat(paste("built wiki: '", wikiName, "'\n", sep=""))
   return(w)
