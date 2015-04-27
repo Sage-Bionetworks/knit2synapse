@@ -100,7 +100,7 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   knitr::opts_chunk$set(error=FALSE)
   
   
-  ## CREATE TEMPORARY OUTPTU DIRECTORY FOR MD AND PLOTS
+  ## CREATE TEMPORARY OUTPUT DIRECTORY FOR MD AND PLOTS
   knitDir <- tempfile(pattern="knitDir")
   dir.create(knitDir)
   knitPlotDir <- file.path(knitDir, "plots/")
