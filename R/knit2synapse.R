@@ -16,13 +16,6 @@
 #####
 
 knit2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, overwrite=FALSE){
-  require(synapseClient)
-  require(knitr)
-  require(RCurl)
-  require(stringr)
-  require(tools)
-  
-  
   ## CHECK TO MAKE SURE FILE EXISTS
   file <- path.expand(file)
   if( !file.exists(file) ){
