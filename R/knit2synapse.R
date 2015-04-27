@@ -1,21 +1,3 @@
-#####
-## AUTHOR: BRIAN M. BOT
-## ORGANIZATION: SAGE BIONETWORKS
-##
-## ALLOW USERS TO LEVERAGE KNITR WHEN CONSTRUCTING SYNAPSE WIKI CONTENT
-
-#####
-## PARAMETERS:
-##   file: path to a local .Rmd file which to knit
-##   owner: a Synapse object which will own the resulting WikiPage (usually a Project, Folder, or File)
-##   parentWikiId (optional): if the resulting WikiPage is to be a subpage of another WikiPage, this is the id for the parent WikiPage (NOTE: owner is still required)
-##   wikiName (optional): a title for the resulting WikiPage - will default to the file name without the .Rmd extension
-##   overwrite (default = FALSE): only if owner specified and parentWikiId is NULL - flag for whether or not to overwrite the previous root WikiPage (if it exists)
-#####
-## VALUE:
-##   a WikiPage object as defined in the synapseClient
-#####
-
 #' Allow users to leverage knit3 when constructing Synapse Wiki content
 #' 
 #' @param File path to a local .Rmd file which to knit
@@ -23,6 +5,7 @@
 #' @param parentWikiId If the resulting WikiPage is to be a subpage of another WikiPage, this is the id for the parent WikiPage (NOTE: owner is still required)
 #' @param wikiName A title for the resulting WikiPage - will default to the file name without the .Rmd extension
 #' @param overwrite Only if owner specified and parentWikiId is NULL - flag for whether or not to overwrite the previous root WikiPage (if it exists)
+#' @return a WikiPage object as defined in the synapseClient
 knit2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, overwrite=FALSE){
   ## CHECK TO MAKE SURE FILE EXISTS
   file <- path.expand(file)
