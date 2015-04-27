@@ -15,7 +15,7 @@ knitit <- function(file, owner, parentWikiId=NULL, wikiName=NULL, overwrite=FALS
   }
   
   ## IF NO WIKI NAME GIVEN, DEFAULT TO FILE NAME WITHOUT EXTENSION
-  fName <- basename(stringr::file_path_sans_ext(file))
+  fName <- basename(tools::file_path_sans_ext(file))
   if( is.null(wikiName) ){
     wikiName <- fName
   }
