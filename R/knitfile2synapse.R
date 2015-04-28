@@ -1,4 +1,4 @@
-#' Allow users to leverage knit3 when constructing Synapse Wiki content
+#' Allow users to leverage knitr when constructing Synapse Wiki content
 #' 
 #' @export
 #' @param File path to a local .Rmd file which to knit
