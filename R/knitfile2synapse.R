@@ -70,19 +70,23 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   # Get all plots to use as attachments
   att <- list.files(knitPlotDir, full.names=TRUE)
   
-  ## CREATE/RETRIVE AND STORE WIKI MARKDOWN TO STNAPSE
+  ## Create/retrieve and store Wiki markdown to Synapse
   w <- try(synGetWiki(owner),silent=T)
-  if (class(w) == 'try-error'){ ## create new wiki if doesn't exisits
-    w <- WikiPage(owner=owner, 
-                  title=wikiName, 
-                  markdown=readChar(mdFile, file.info(mdFile)$size))      
-  } else if (overwrite) { ## delete exisitng wiki along with history
+  
+  ## create new wiki if doesn't exist
+  if (class(w) == 'try-error') {
+    w <- WikiPage(owner=owner,
+                  title=wikiName,
+                  markdown=readChar(mdFile, file.info(mdFile)$size))
+  # delete existing wiki along with history
+  } else if (overwrite) {
     w <- synGetWiki(owner)
     w <- synDelete(w)
-    w <- WikiPage(owner=owner, 
-                  title=wikiName, 
+    w <- WikiPage(owner=owner,
+                  title=wikiName,
                   markdown=readChar(mdFile, file.info(mdFile)$size))
-  } else {## update exisitng wiki    
+  # update existing wiki
+  } else {
     w <- synGetWiki(owner)    
     w@properties$title <- wikiName
     w@properties$markdown <- readChar(mdFile, file.info(mdFile)$size)
