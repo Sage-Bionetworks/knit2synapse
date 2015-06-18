@@ -55,9 +55,17 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   ## File name 
   mdName <- file.path(knitDir, paste(fName, ".md", sep=""))
   
-  mdFile <- knitr::knit(file,
-                        envir=parent.frame(n=2),
-                        output=mdName)
+  ## Knit file to markdown
+  if (knitmd) {
+    mdFile <- knitr::knit(file,
+                   envir = parent.frame(n=2),
+                   output = mdName)
+  } else if (file.exists(mdName)) { # if knitmd is false check already markdown exists
+    mdFile <- mdName
+  } else {
+    stop(sprintf("markdown file %s does not exist at this location: %s", basename(mdName), mdName))
+  }
+
   att <- list.files(knitPlotDir, full.names=TRUE)
   
   if( is.null(parentWikiId) ){ ## doesn't have a parentWiki
