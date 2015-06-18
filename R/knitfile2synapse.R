@@ -66,7 +66,8 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   } else {
     stop(sprintf("markdown file %s does not exist at this location: %s", basename(mdName), mdName))
   }
-
+  
+  # Get all plots to use as attachments
   att <- list.files(knitPlotDir, full.names=TRUE)
   
   if( is.null(parentWikiId) ){ ## doesn't have a parentWiki
