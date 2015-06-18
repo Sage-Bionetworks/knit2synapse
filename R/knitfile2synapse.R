@@ -26,25 +26,33 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   }
   
   #####
-  ## SET SYNAPSE-SPECIFIC MARKDOWN HOOKS
+  ## Set Synapse-specific markdown hooks
   #####
   knitr::render_markdown()
   
-  ## PLOTS
+  ## Set plotting and knitr options
   old_knitr_opts <- knitr::opts_chunk$get()
   knitr::opts_chunk$set(tidy=FALSE, error=FALSE)
   
   old_knitr_hooks <- knitr::knit_hooks$get()
   knitr::knit_hooks$set(plot=hook_synapseMdSyntax_plot)
   
+  ## Create temporary output directory for Markdown and plots
+  ## If a cache directory exists, then do not create a new one
+  if (file.exists(paste(file_path_sans_ext(file),'cache',sep='_'))){
+    knitDir <- paste(file_path_sans_ext(file),'cache',sep='_')
+  } else {
+    knitDir <- tempfile(pattern="knitDir")    
+    dir.create(knitDir)
+  }
   
-  ## CREATE TEMPORARY OUTPUT DIRECTORY FOR MD AND PLOTS
-  knitDir <- tempfile(pattern="knitDir")
-  dir.create(knitDir)
+  ## Create plots directory
   knitPlotDir <- file.path(knitDir, "plots/")
-  dir.create(knitPlotDir)
-  knitr::opts_chunk$set(fig.path = knitPlotDir)
+  if (!file.exists(knitPlotDir))
+    dir.create(knitPlotDir)  
+  opts_chunk$set(fig.path = knitPlotDir)
   
+  ## File name 
   mdName <- file.path(knitDir, paste(fName, ".md", sep=""))
   
   mdFile <- knitr::knit(file,
