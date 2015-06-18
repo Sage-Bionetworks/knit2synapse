@@ -112,3 +112,29 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   cat(paste("built wiki: '", wikiName, "'\n", sep=""))
   return(w)
 }
+
+storeAndKnitToFileEntity <- function(file, parentId, entityName, owner=NULL, parentWikiId=NULL,
+                             wikiName=NULL, overwrite=FALSE, knitmd=TRUE...) {
+  entity <- File(file, parentId=parentId, name=entityName)
+  entity <- synStore(entity, ...)
+  
+  if (is.null(owner)) {
+    owner <- entity
+  }
+
+  knitfile2synapse(file=file, owner=owner, parentWikiId=parentWikiId, wikiName=wikiName,
+                   overwrite=overwrite, knitmd=knitmd)
+}
+
+knitToFolderEntity <- function(parentId, entityName, owner=NULL, parentWikiId=NULL,
+                             wikiName=NULL, overwrite=FALSE, knitmd=TRUE...) {
+  entity <- Folder(parentId=parentId, name=entityName)
+  entity <- synStore(entity, ...)
+
+  if (is.null(owner)) {
+    owner <- entity
+  }
+  
+  knitfile2synapse(file=file, owner=owner, parentWikiId=parentWikiId, wikiName=wikiName,
+                   overwrite=overwrite, knitmd=knitmd)
+}
