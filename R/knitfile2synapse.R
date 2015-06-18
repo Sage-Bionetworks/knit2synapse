@@ -31,9 +31,11 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   knitr::render_markdown()
   
   ## PLOTS
+  old_knitr_opts <- knitr::opts_chunk$get()
+  knitr::opts_chunk$set(tidy=FALSE, error=FALSE)
+  
+  old_knitr_hooks <- knitr::knit_hooks$get()
   knitr::knit_hooks$set(plot=hook_synapseMdSyntax_plot)
-  knitr::opts_chunk$set(tidy=FALSE)
-  knitr::opts_chunk$set(error=FALSE)
   
   
   ## CREATE TEMPORARY OUTPUT DIRECTORY FOR MD AND PLOTS
@@ -91,6 +93,11 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
     }
     w <- synapseClient::synStore(w)
   }
+  
+  # Undo changes to options
+  knitr::opts_chunk$restore(old_knitr_opts)
+  knitr::knit_hooks$restore(old_knitr_hooks)
+  
   cat(paste("built wiki: '", wikiName, "'\n", sep=""))
   return(w)
 }
