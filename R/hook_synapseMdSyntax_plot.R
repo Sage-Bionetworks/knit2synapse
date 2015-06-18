@@ -58,5 +58,5 @@ hook_synapseMdSyntax_plot <- function(x, options){
     synPlotMdOpts <- paste(synPlotMdOpts, "&scale=100", sep="")
   }
   
-  paste("${image?fileName=", curlPercentEncode(basename(paste(x, collapse=".")), codes=urlEncodings), synPlotMdOpts, "}\n", sep="")
+  paste("${image?fileName=", RCurl::curlPercentEncode(basename(paste(x, collapse=".")), codes=urlEncodings), synPlotMdOpts, "}\n", sep="")
 }

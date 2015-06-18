@@ -40,8 +40,8 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   
   ## Create temporary output directory for Markdown and plots
   ## If a cache directory exists, then do not create a new one
-  if (file.exists(paste(file_path_sans_ext(file),'cache',sep='_'))){
-    knitDir <- paste(file_path_sans_ext(file),'cache',sep='_')
+  if (file.exists(paste(tools::file_path_sans_ext(file),'cache',sep='_'))){
+    knitDir <- paste(tools::file_path_sans_ext(file),'cache',sep='_')
   } else {
     knitDir <- tempfile(pattern="knitDir")    
     dir.create(knitDir)
@@ -51,7 +51,7 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   knitPlotDir <- file.path(knitDir, "plots/")
   if (!file.exists(knitPlotDir))
     dir.create(knitPlotDir)  
-  opts_chunk$set(fig.path = knitPlotDir)
+  knitr::opts_chunk$set(fig.path = knitPlotDir)
   
   ## File name 
   mdName <- file.path(knitDir, paste(fName, ".md", sep=""))
