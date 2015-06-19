@@ -6,7 +6,7 @@
 #' @param parentWikiId If the resulting WikiPage is to be a subpage of another WikiPage, this is the id for the parent WikiPage (NOTE: owner is still required)
 #' @param wikiName A title for the resulting WikiPage - will default to the file name without the .Rmd extension
 #' @param overwrite Only if owner specified and parentWikiId is NULL - flag for whether or not to overwrite the previous root WikiPage (if it exists)
-#' @param overwrite Flag for whether or not to knit; if false and file already exists, don't knit it again
+#' @param knitmd Flag for whether or not to knit; if false and file already exists, don't knit it again
 #' @return a WikiPage object as defined in the synapseClient
 knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, overwrite=FALSE, knitmd=TRUE){
   ## CHECK TO MAKE SURE FILE EXISTS
@@ -40,12 +40,9 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   
   ## Create temporary output directory for Markdown and plots
   ## If a cache directory exists, then do not create a new one
-  if (file.exists(paste(tools::file_path_sans_ext(file),'cache',sep='_'))){
-    knitDir <- paste(tools::file_path_sans_ext(file),'cache',sep='_')
-  } else {
-    knitDir <- tempfile(pattern="knitDir")    
+  knitDir <- paste(tools::file_path_sans_ext(file),'cache',sep='_')
+  if (!file.exists(paste(tools::file_path_sans_ext(file),'cache',sep='_')))
     dir.create(knitDir)
-  }
   
   ## Create plots directory
   knitPlotDir <- file.path(knitDir, "plots/")
@@ -113,28 +110,16 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   return(w)
 }
 
-storeAndKnitToFileEntity <- function(file, parentId, entityName, owner=NULL, parentWikiId=NULL,
-                             wikiName=NULL, overwrite=FALSE, knitmd=TRUE...) {
+storeAndKnitToFileEntity <- function(file, parentId, entityName, parentWikiId=NULL, wikiName=NULL, overwrite=FALSE, knitmd=TRUE, ...) {
   entity <- File(file, parentId=parentId, name=entityName)
   entity <- synStore(entity, ...)
   
-  if (is.null(owner)) {
-    owner <- entity
-  }
-
-  knitfile2synapse(file=file, owner=owner, parentWikiId=parentWikiId, wikiName=wikiName,
-                   overwrite=overwrite, knitmd=knitmd)
+  knitfile2synapse(file=file, owner=entity, parentWikiId=parentWikiId, wikiName=wikiName, overwrite=overwrite, knitmd=knitmd)
 }
 
-knitToFolderEntity <- function(parentId, entityName, owner=NULL, parentWikiId=NULL,
-                             wikiName=NULL, overwrite=FALSE, knitmd=TRUE...) {
+knitToFolderEntity <- function(file, parentId, entityName, parentWikiId=NULL, wikiName=NULL, overwrite=FALSE, knitmd=TRUE, ...) {
   entity <- Folder(parentId=parentId, name=entityName)
   entity <- synStore(entity, ...)
-
-  if (is.null(owner)) {
-    owner <- entity
-  }
   
-  knitfile2synapse(file=file, owner=owner, parentWikiId=parentWikiId, wikiName=wikiName,
-                   overwrite=overwrite, knitmd=knitmd)
+  knitfile2synapse(file=file, owner=entity, parentWikiId=parentWikiId, wikiName=wikiName, overwrite=overwrite, knitmd=knitmd)
 }
