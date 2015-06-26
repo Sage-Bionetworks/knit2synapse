@@ -1,4 +1,4 @@
-#' Allow users to leverage knit3 when constructing Synapse Wiki content
+#' Allow users to leverage knitr when constructing Synapse Wiki content
 #' 
 #' @export
 #' @param File path to a local .Rmd file which to knit
@@ -6,8 +6,9 @@
 #' @param parentWikiId If the resulting WikiPage is to be a subpage of another WikiPage, this is the id for the parent WikiPage (NOTE: owner is still required)
 #' @param wikiName A title for the resulting WikiPage - will default to the file name without the .Rmd extension
 #' @param overwrite Only if owner specified and parentWikiId is NULL - flag for whether or not to overwrite the previous root WikiPage (if it exists)
+#' @param overwrite Flag for whether or not to knit; if false and file already exists, don't knit it again
 #' @return a WikiPage object as defined in the synapseClient
-knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, overwrite=FALSE){
+knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, overwrite=FALSE, knitmd=TRUE){
   ## CHECK TO MAKE SURE FILE EXISTS
   file <- path.expand(file)
   if( !file.exists(file) ){
@@ -26,135 +27,88 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   }
   
   #####
-  ## SET SYNAPSE-SPECIFIC MARKDOWN HOOKS
+  ## Set Synapse-specific markdown hooks
   #####
   knitr::render_markdown()
   
-  ## PLOTS
-  hook_synapseMdSyntax_plot <- function(x, options){
-    synPlotMdOpts <- character()
-    
-    ## SET URL ENCODING STRINGS
-    urlEncodings <- c('{' = "%7B",
-                      '}' = "%7D",
-                      '-' = "%2D",
-                      '_' = "%5F",
-                      '.' = "%2E",
-                      '!' = "%21",
-                      '~' = "%7E",
-                      '*' = "%2A",
-                      '`' = "%60",
-                      '\'' = "%27",
-                      '(' = "%28",
-                      ')' = "%29",
-                      '[' = "%5B",
-                      ']' = "%5D",
-                      ':' = "%3A",
-                      ';' = "%3B",
-                      '\n' = "%0A",
-                      '\r' = "%0D",
-                      '/' = "%2F",
-                      '?' = "%3F",
-                      '&' = "%26",
-                      '=' = "%3D",
-                      '+' = "%2B",
-                      ',' = "%2C",
-                      '#' = "%23",
-                      '$' = "%24")
-    
-    ## CHECK FOR ALIGN OPTION BEING SET
-    if( any(names(options) == "align") ){
-      ## CHECKS FOR ALIGN OPTION
-      if( !is.character(options$align) ){
-        stop("align must be one of none, left, right, or center")
-      }
-      if( !(options$align %in% c("none", "left", "right", "center")) ){
-        stop("align must be one of none, left, right, or center")
-      }
-      synPlotMdOpts <- paste(synPlotMdOpts, "&align=", options$align, sep="")
-    } else{
-      synPlotMdOpts <- paste(synPlotMdOpts, "&align=none", sep="")
-    }
-    
-    ## CHECK FOR SCALE OPTION BEING SET
-    if( any(names(options) == "scale") ){
-      ## RANGE CHECKS FOR SCALE OPTION
-      if( !is.numeric(options$scale) ){
-        stop("scale option must be numeric")
-      }
-      if( options$scale <= 0 | options$scale > 500 ){
-        stop("scale option must be greater than 0 and less than 500")
-      }
-      
-      synPlotMdOpts <- paste(synPlotMdOpts, "&scale=", options$scale, sep="")
-    } else{
-      synPlotMdOpts <- paste(synPlotMdOpts, "&scale=100", sep="")
-    }
-    
-    paste("${image?fileName=", 
-          RCurl::curlPercentEncode(basename(paste(x, collapse=".")), codes=urlEncodings), 
-          synPlotMdOpts, "}\n", sep="")
-  }
+  ## Set plotting and knitr options
+  old_knitr_opts <- knitr::opts_chunk$get()
+  knitr::opts_chunk$set(tidy=FALSE, error=FALSE)
+  
+  old_knitr_hooks <- knitr::knit_hooks$get()
   knitr::knit_hooks$set(plot=hook_synapseMdSyntax_plot)
-  knitr::opts_chunk$set(tidy=FALSE)
-  knitr::opts_chunk$set(error=FALSE)
   
+  ## Create temporary output directory for Markdown and plots
+  ## If a cache directory exists, then do not create a new one
+  if (file.exists(paste(tools::file_path_sans_ext(file),'cache',sep='_'))){
+    knitDir <- paste(tools::file_path_sans_ext(file),'cache',sep='_')
+  } else {
+    knitDir <- tempfile(pattern="knitDir")    
+    dir.create(knitDir)
+  }
   
-  ## CREATE TEMPORARY OUTPTU DIRECTORY FOR MD AND PLOTS
-  knitDir <- tempfile(pattern="knitDir")
-  dir.create(knitDir)
+  ## Create plots directory
   knitPlotDir <- file.path(knitDir, "plots/")
-  dir.create(knitPlotDir)
+  if (!file.exists(knitPlotDir))
+    dir.create(knitPlotDir)  
   knitr::opts_chunk$set(fig.path = knitPlotDir)
   
+  ## File name 
   mdName <- file.path(knitDir, paste(fName, ".md", sep=""))
   
-  mdFile <- knitr::knit(file,
-                        envir=parent.frame(n=2),
-                        output=mdName)
+  ## Knit file to markdown
+  if (knitmd) {
+    mdFile <- knitr::knit(file,
+                   envir = parent.frame(n=2),
+                   output = mdName)
+  } else if (file.exists(mdName)) { # if knitmd is false check already markdown exists
+    mdFile <- mdName
+  } else {
+    stop(sprintf("markdown file %s does not exist at this location: %s", basename(mdName), mdName))
+  }
+  
+  # Get all plots to use as attachments
   att <- list.files(knitPlotDir, full.names=TRUE)
   
-  if( is.null(parentWikiId) ){ ## doesn't have a parentWiki
-    if( length(att) > 0 ){ ## has attachments
-      w <- synapseClient::WikiPage(owner=owner, 
-                                   title=wikiName, 
-                                   attachments=as.list(att),
-                                   markdown=readChar(mdFile, file.info(mdFile)$size))
-    } else{ ## doesn't have attachments
-      w <- synapseClient::WikiPage(owner=owner, 
-                                   title=wikiName, 
-                                   markdown=readChar(mdFile, file.info(mdFile)$size))
-    }
-    
-    if( overwrite ){
-      ## TRY TO STORE
-      tmp <- try(synapseClient::synStore(w), silent=TRUE)
-      if( class(tmp) == "try-error" ){
-        tmp <- synapseClient::synGetWiki(owner)
-        tmp <- synapseClient::synDelete(tmp)
-        w <- synapseClient::synStore(w)
-      } else{
-        w <- tmp
-      }
-    } else{
-      w <- synapseClient::synStore(w)
-    }
-    
-  } else{ ## has a parentWiki
-    if( length(att) > 0 ){ ## has attachments
-      w <- synapseClient::WikiPage(owner=owner, 
-                                   title=wikiName, 
-                                   attachments=as.list(att),
-                                   markdown=readChar(mdFile, file.info(mdFile)$size),
-                                   parentWikiId=parentWikiId)
-    } else{ ## doesn't have attachments
-      w <- synapseClient::WikiPage(owner=owner, 
-                                   title=wikiName, 
-                                   markdown=readChar(mdFile, file.info(mdFile)$size),
-                                   parentWikiId=parentWikiId)
-    }
-    w <- synapseClient::synStore(w)
+  ## Create/retrieve and store Wiki markdown to Synapse
+  w <- try(synGetWiki(owner),silent=T)
+  
+  ## create new wiki if doesn't exist
+  if (class(w) == 'try-error') {
+    w <- WikiPage(owner=owner,
+                  title=wikiName,
+                  markdown=readChar(mdFile, file.info(mdFile)$size))
+  # delete existing wiki along with history
+  } else if (overwrite) {
+    w <- synGetWiki(owner)
+    w <- synDelete(w)
+    w <- WikiPage(owner=owner,
+                  title=wikiName,
+                  markdown=readChar(mdFile, file.info(mdFile)$size))
+  # update existing wiki
+  } else {
+    w <- synGetWiki(owner)    
+    w@properties$title <- wikiName
+    w@properties$markdown <- readChar(mdFile, file.info(mdFile)$size)
   }
+  
+  ## Add the attachments
+  if (length(att) > 0 ){
+    w@attachments <- as.list(att)
+  }
+  
+  ## Set the parent wiki id, if one provided
+  if(!is.null(parentWikiId)){
+    w@properties$parentWikiId <- parentWikiId
+  }
+  
+  ## Store to Synapse 
+  w <- synStore(w)
+  
+  # Undo changes to options
+  knitr::opts_chunk$restore(old_knitr_opts)
+  knitr::knit_hooks$restore(old_knitr_hooks)
+  
   cat(paste("built wiki: '", wikiName, "'\n", sep=""))
   return(w)
 }
