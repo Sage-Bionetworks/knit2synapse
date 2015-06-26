@@ -12,7 +12,7 @@
 storeAndKnitToFileEntity <- function(file, parentId, entityName=NULL, parentWikiId=NULL, wikiName=NULL, overwrite=FALSE, knitmd=TRUE, ...) {
   
   # If entityName is not provided then the basename of the file is used as entity name
-  if (is.null(enitytName))
+  if (is.null(entitytName))
     entityName <- basename(tools::file_path_sans_ext(file))
   
   entity <- File(file, parentId=parentId, name=entityName)
