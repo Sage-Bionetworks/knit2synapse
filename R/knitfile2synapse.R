@@ -109,7 +109,7 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
 }
 
 storeAndKnitToFileEntity <- function(file, parentId, fileName, owner=NULL, parentWikiId=NULL,
-                                     wikiName=NULL, overwrite=FALSE, knitmd=TRUE...) {
+                                     wikiName=NULL, overwrite=FALSE, knitmd=TRUE, ...) {
   
   if (is.null(owner)) {
     entity <- synapseClient::File(file, parentId=parentId, name=fileName)
