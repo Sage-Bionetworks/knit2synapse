@@ -1,7 +1,10 @@
+
+#' knitfile2synapse
+#' 
 #' Allow users to leverage knitr when constructing Synapse Wiki content
 #' 
 #' @export
-#' @param File path to a local .Rmd file which to knit
+#' @param file path to a local .Rmd file which to knit
 #' @param owner A Synapse object which will own the resulting WikiPage (usually a Project, Folder, or File)
 #' @param parentWikiId If the resulting WikiPage is to be a subpage of another WikiPage, this is the id for the parent WikiPage (NOTE: owner is still required)
 #' @param wikiName A title for the resulting WikiPage - will default to the file name without the .Rmd extension
@@ -108,6 +111,10 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   return(w)
 }
 
+#' storeAndKnitToFileEntity
+#'
+#' Store a local RMarkdown file to Synapse and then knit it to that file's WikiPage.
+#'
 #' @export
 #' @param file path to a local .Rmd file which to knit
 #' @param parentId A synapseClient::Project or synapseClient::Folder entity (or Synapse ID of an entity) where the File will be created
@@ -131,6 +138,10 @@ storeAndKnitToFileEntity <- function(file, parentId, fileName=NULL, owner=NULL, 
                    overwrite=overwrite, knitmd=knitmd)
 }
 
+#' knitToFolderEntity
+#' 
+#' Create a Synapse Folder entity and knit a local RMarkdown file to it's WikiPage.
+#' 
 #' @export
 #' @param file path to a local .Rmd file which to knit
 #' @param parentId A synapseClient::Project or synapseClient::Folder entity (or Synapse ID of an entity) where the Folder will be created
