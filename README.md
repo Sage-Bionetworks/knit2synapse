@@ -5,7 +5,7 @@
 Using `devtools`:
 
 ```
-devtools:install_github("Sage-Bionetworks/knit2synapse")
+devtools::install_github("Sage-Bionetworks/knit2synapse")
 ```
 
 ### Usage
