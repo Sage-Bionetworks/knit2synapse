@@ -1,13 +1,16 @@
+
+#' knitfile2synapse
+#' 
 #' Allow users to leverage knitr when constructing Synapse Wiki content
 #' 
 #' @export
-#' @param File path to a local .Rmd file which to knit
+#' @param file path to a local .Rmd file which to knit
 #' @param owner A Synapse object which will own the resulting WikiPage (usually a Project, Folder, or File)
 #' @param parentWikiId If the resulting WikiPage is to be a subpage of another WikiPage, this is the id for the parent WikiPage (NOTE: owner is still required)
 #' @param wikiName A title for the resulting WikiPage - will default to the file name without the .Rmd extension
 #' @param overwrite Only if owner specified and parentWikiId is NULL - flag for whether or not to overwrite the previous root WikiPage (if it exists)
-#' @param overwrite Flag for whether or not to knit; if false and file already exists, don't knit it again
-#' @return a WikiPage object as defined in the synapseClient
+#' @param knitmd Flag for whether or not to knit; if false and file already exists, don't knit it again
+#' @return a synapseClient::WikiPage object
 knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, overwrite=FALSE, knitmd=TRUE){
   ## CHECK TO MAKE SURE FILE EXISTS
   file <- path.expand(file)
@@ -40,12 +43,9 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   
   ## Create temporary output directory for Markdown and plots
   ## If a cache directory exists, then do not create a new one
-  if (file.exists(paste(tools::file_path_sans_ext(file),'cache',sep='_'))){
-    knitDir <- paste(tools::file_path_sans_ext(file),'cache',sep='_')
-  } else {
-    knitDir <- tempfile(pattern="knitDir")    
+  knitDir <- paste(tools::file_path_sans_ext(file),'cache',sep='_')
+  if (!file.exists(paste(tools::file_path_sans_ext(file),'cache',sep='_')))
     dir.create(knitDir)
-  }
   
   ## Create plots directory
   knitPlotDir <- file.path(knitDir, "plots/")
@@ -59,35 +59,33 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   ## Knit file to markdown
   if (knitmd) {
     mdFile <- knitr::knit(file,
-                   envir = parent.frame(n=2),
-                   output = mdName)
+                          envir = parent.frame(n=2),
+                          output = mdName)
   } else if (file.exists(mdName)) { # if knitmd is false check already markdown exists
     mdFile <- mdName
   } else {
     stop(sprintf("markdown file %s does not exist at this location: %s", basename(mdName), mdName))
   }
-  
-  # Get all plots to use as attachments
-  att <- list.files(knitPlotDir, full.names=TRUE)
-  
+    att <- list.files(knitPlotDir, full.names=TRUE)
+
   ## Create/retrieve and store Wiki markdown to Synapse
-  w <- try(synGetWiki(owner),silent=T)
+  w <- try(synapseClient::synGetWiki(owner),silent=T)
   
   ## create new wiki if doesn't exist
   if (class(w) == 'try-error') {
-    w <- WikiPage(owner=owner,
-                  title=wikiName,
-                  markdown=readChar(mdFile, file.info(mdFile)$size))
+    w <- synapseClient::WikiPage(owner=owner,
+                                 title=wikiName,
+                                 markdown=readChar(mdFile, file.info(mdFile)$size))
   # delete existing wiki along with history
   } else if (overwrite) {
-    w <- synGetWiki(owner)
-    w <- synDelete(w)
-    w <- WikiPage(owner=owner,
-                  title=wikiName,
-                  markdown=readChar(mdFile, file.info(mdFile)$size))
-  # update existing wiki
+    w <- synapseClient::synGetWiki(owner)
+    w <- synapseClient::synDelete(w)
+    w <- synapseClient::WikiPage(owner=owner,
+                                 title=wikiName,
+                                 markdown=readChar(mdFile, file.info(mdFile)$size))
+    # update existing wiki
   } else {
-    w <- synGetWiki(owner)    
+    w <- synapseClient::synGetWiki(owner)    
     w@properties$title <- wikiName
     w@properties$markdown <- readChar(mdFile, file.info(mdFile)$size)
   }
@@ -103,7 +101,7 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   }
   
   ## Store to Synapse 
-  w <- synStore(w)
+  w <- synapseClient::synStore(w)
   
   # Undo changes to options
   knitr::opts_chunk$restore(old_knitr_opts)
@@ -111,4 +109,58 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   
   cat(paste("built wiki: '", wikiName, "'\n", sep=""))
   return(w)
+}
+
+#' storeAndKnitToFileEntity
+#'
+#' Store a local RMarkdown file to Synapse and then knit it to that file's WikiPage.
+#'
+#' @export
+#' @param file path to a local .Rmd file which to knit
+#' @param parentId A synapseClient::Project or synapseClient::Folder entity (or Synapse ID of an entity) where the File will be created
+#' @param fileName Name of the synapseClient::File to create
+#' @param owner A Synapse entity (or Synapse ID of an entity) which will own the resulting WikiPage (usually a Project, Folder, or File)
+#' @param parentWikiId If the resulting WikiPage is to be a subpage of another WikiPage, this is the ID for the parent WikiPage (NOTE: owner is still required)
+#' @param wikiName A title for the resulting WikiPage - will default to the file name without the .Rmd extension
+#' @param overwrite Only if owner specified and parentWikiId is NULL - flag for whether or not to overwrite the previous root WikiPage (if it exists). This will remove the history of changes for this Wiki page.
+#' @param knitmd Flag for whether or not to knit; if FALSE and file already exists, don't knit it again
+#' @return a synapseClient::WikiPage object
+storeAndKnitToFileEntity <- function(file, parentId, fileName=NULL, owner=NULL, parentWikiId=NULL,
+                                     wikiName=NULL, overwrite=FALSE, knitmd=TRUE, ...) {
+  
+  if (is.null(owner)) {
+    entity <- synapseClient::File(file, parentId=parentId, name=fileName)
+    entity <- synapseClient::synStore(entity, ...)
+    owner <- entity
+  }
+  
+  knitfile2synapse(file=file, owner=owner, parentWikiId=parentWikiId, wikiName=wikiName,
+                   overwrite=overwrite, knitmd=knitmd)
+}
+
+#' knitToFolderEntity
+#' 
+#' Create a Synapse Folder entity and knit a local RMarkdown file to it's WikiPage.
+#' 
+#' @export
+#' @param file path to a local .Rmd file which to knit
+#' @param parentId A synapseClient::Project or synapseClient::Folder entity (or Synapse ID of an entity) where the Folder will be created
+#' @param folderName Name of the synapseClient::Folder to create
+#' @param owner A Synapse entity (or Synapse ID of an entity) which will own the resulting WikiPage (usually a synapseClient::Project, synapseClient::Folder, or synapseClient::File)
+#' @param parentWikiId If the resulting WikiPage is to be a subpage of another WikiPage, this is the ID for the parent WikiPage (NOTE: owner is still required)
+#' @param wikiName A title for the resulting WikiPage - will default to the file name without the .Rmd extension
+#' @param overwrite Only if owner specified and parentWikiId is NULL - flag for whether or not to overwrite the previous root WikiPage (if it exists). This will remove the history of changes for this Wiki page.
+#' @param knitmd Flag for whether or not to knit; if FALSE and file already exists, don't knit it again
+#' @return a synapseClient::WikiPage entity object
+knitToFolderEntity <- function(file, parentId, folderName, owner=NULL, parentWikiId=NULL,
+                               wikiName=NULL, overwrite=FALSE, knitmd=TRUE, ...) {
+  
+  if (is.null(owner)) {
+    entity <- synapseClient::Folder(parentId=parentId, name=folderName)
+    entity <- synapseClient::synStore(entity, ...)
+    owner <- entity
+  }
+  
+  knitfile2synapse(file=file, owner=owner, parentWikiId=parentWikiId, wikiName=wikiName,
+                   overwrite=overwrite, knitmd=knitmd)
 }
