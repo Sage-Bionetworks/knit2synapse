@@ -56,35 +56,33 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   ## Knit file to markdown
   if (knitmd) {
     mdFile <- knitr::knit(file,
-                   envir = parent.frame(n=2),
-                   output = mdName)
+                          envir = parent.frame(n=2),
+                          output = mdName)
   } else if (file.exists(mdName)) { # if knitmd is false check already markdown exists
     mdFile <- mdName
   } else {
     stop(sprintf("markdown file %s does not exist at this location: %s", basename(mdName), mdName))
   }
-  
-  # Get all plots to use as attachments
-  att <- list.files(knitPlotDir, full.names=TRUE)
-  
+    att <- list.files(knitPlotDir, full.names=TRUE)
+
   ## Create/retrieve and store Wiki markdown to Synapse
-  w <- try(synGetWiki(owner),silent=T)
+  w <- try(synapseClient::synGetWiki(owner),silent=T)
   
   ## create new wiki if doesn't exist
   if (class(w) == 'try-error') {
-    w <- WikiPage(owner=owner,
-                  title=wikiName,
-                  markdown=readChar(mdFile, file.info(mdFile)$size))
+    w <- synapseClient::WikiPage(owner=owner,
+                                 title=wikiName,
+                                 markdown=readChar(mdFile, file.info(mdFile)$size))
   # delete existing wiki along with history
   } else if (overwrite) {
-    w <- synGetWiki(owner)
-    w <- synDelete(w)
-    w <- WikiPage(owner=owner,
-                  title=wikiName,
-                  markdown=readChar(mdFile, file.info(mdFile)$size))
-  # update existing wiki
+    w <- synapseClient::synGetWiki(owner)
+    w <- synapseClient::synDelete(w)
+    w <- synapseClient::WikiPage(owner=owner,
+                                 title=wikiName,
+                                 markdown=readChar(mdFile, file.info(mdFile)$size))
+    # update existing wiki
   } else {
-    w <- synGetWiki(owner)    
+    w <- synapseClient::synGetWiki(owner)    
     w@properties$title <- wikiName
     w@properties$markdown <- readChar(mdFile, file.info(mdFile)$size)
   }
@@ -100,7 +98,7 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   }
   
   ## Store to Synapse 
-  w <- synStore(w)
+  w <- synapseClient::synStore(w)
   
   # Undo changes to options
   knitr::opts_chunk$restore(old_knitr_opts)
@@ -108,4 +106,30 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   
   cat(paste("built wiki: '", wikiName, "'\n", sep=""))
   return(w)
+}
+
+storeAndKnitToFileEntity <- function(file, parentId, fileName, owner=NULL, parentWikiId=NULL,
+                                     wikiName=NULL, overwrite=FALSE, knitmd=TRUE...) {
+  
+  if (is.null(owner)) {
+    entity <- synapseClient::File(file, parentId=parentId, name=fileName)
+    entity <- synapseClient::synStore(entity, ...)
+    owner <- entity
+  }
+  
+  knitfile2synapse(file=file, owner=owner, parentWikiId=parentWikiId, wikiName=wikiName,
+                   overwrite=overwrite, knitmd=knitmd)
+}
+
+knitToFolderEntity <- function(file, parentId, folderName, owner=NULL, parentWikiId=NULL,
+                               wikiName=NULL, overwrite=FALSE, knitmd=TRUE, ...) {
+  
+  if (is.null(owner)) {
+    entity <- synapseClient::Folder(parentId=parentId, name=folderName)
+    entity <- synapseClient::synStore(entity, ...)
+    owner <- entity
+  }
+  
+  knitfile2synapse(file=file, owner=owner, parentWikiId=parentWikiId, wikiName=wikiName,
+                   overwrite=overwrite, knitmd=knitmd)
 }
