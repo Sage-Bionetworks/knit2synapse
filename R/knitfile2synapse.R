@@ -101,7 +101,7 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   return(w)
 }
 
-#' storeAndKnitToFileEntity
+#' createAndKnitToFileEntity
 #'
 #' Store a local RMarkdown file to Synapse and then knit it to that file's WikiPage.
 #'
@@ -109,8 +109,6 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
 #' @param file path to a local .Rmd file which to knit
 #' @param parentId A synapseClient::Project or synapseClient::Folder entity (or Synapse ID of an entity) where the File will be created
 #' @param fileName Name of the synapseClient::File to create
-#' @param owner A Synapse entity (or Synapse ID of an entity) which will own the resulting WikiPage (usually a Project, Folder, or File)
-#' @param parentWikiId If the resulting WikiPage is to be a subpage of another WikiPage, this is the ID for the parent WikiPage (NOTE: owner is still required)
 #' @param wikiName A title for the resulting WikiPage - will default to the file name without the .Rmd extension
 #' @param overwrite Only if owner specified and parentWikiId is NULL - flag for whether or not to overwrite the previous root WikiPage (if it exists). This will remove the history of changes for this Wiki page.
 #' @param knitmd Flag for whether or not to knit; if FALSE and file already exists, don't knit it again
@@ -124,7 +122,7 @@ createAndKnitToFileEntity <- function(file, parentId, fileName=NULL, wikiName=NU
                    overwrite=overwrite, knitmd=knitmd)
 }
 
-#' knitToFolderEntity
+#' createAndKnitToFolderEntity
 #' 
 #' Create a Synapse Folder entity and knit a local RMarkdown file to it's WikiPage.
 #' 
@@ -132,8 +130,6 @@ createAndKnitToFileEntity <- function(file, parentId, fileName=NULL, wikiName=NU
 #' @param file path to a local .Rmd file which to knit
 #' @param parentId A synapseClient::Project or synapseClient::Folder entity (or Synapse ID of an entity) where the Folder will be created
 #' @param folderName Name of the synapseClient::Folder to create
-#' @param owner A Synapse entity (or Synapse ID of an entity) which will own the resulting WikiPage (usually a synapseClient::Project, synapseClient::Folder, or synapseClient::File)
-#' @param parentWikiId If the resulting WikiPage is to be a subpage of another WikiPage, this is the ID for the parent WikiPage (NOTE: owner is still required)
 #' @param wikiName A title for the resulting WikiPage - will default to the file name without the .Rmd extension
 #' @param overwrite Only if owner specified and parentWikiId is NULL - flag for whether or not to overwrite the previous root WikiPage (if it exists). This will remove the history of changes for this Wiki page.
 #' @param knitmd Flag for whether or not to knit; if FALSE and file already exists, don't knit it again
