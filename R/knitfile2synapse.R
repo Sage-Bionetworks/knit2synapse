@@ -115,16 +115,12 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
 #' @param overwrite Only if owner specified and parentWikiId is NULL - flag for whether or not to overwrite the previous root WikiPage (if it exists). This will remove the history of changes for this Wiki page.
 #' @param knitmd Flag for whether or not to knit; if FALSE and file already exists, don't knit it again
 #' @return a synapseClient::WikiPage object
-storeAndKnitToFileEntity <- function(file, parentId, fileName=NULL, owner=NULL, parentWikiId=NULL,
-                                     wikiName=NULL, overwrite=FALSE, knitmd=TRUE, ...) {
+createAndKnitToFileEntity <- function(file, parentId, fileName=NULL, wikiName=NULL, overwrite=FALSE, knitmd=TRUE, ...) {
   
-  if (is.null(owner)) {
-    entity <- synapseClient::File(file, parentId=parentId, name=fileName)
-    entity <- synapseClient::synStore(entity, ...)
-    owner <- entity
-  }
-  
-  knitfile2synapse(file=file, owner=owner, parentWikiId=parentWikiId, wikiName=wikiName,
+  entity <- synapser::File(file, parentId=parentId, name=fileName)
+  entity <- synapser::synStore(entity, ...)
+
+  knitfile2synapse(file=file, owner=entity, wikiName=wikiName,
                    overwrite=overwrite, knitmd=knitmd)
 }
 
@@ -142,15 +138,12 @@ storeAndKnitToFileEntity <- function(file, parentId, fileName=NULL, owner=NULL, 
 #' @param overwrite Only if owner specified and parentWikiId is NULL - flag for whether or not to overwrite the previous root WikiPage (if it exists). This will remove the history of changes for this Wiki page.
 #' @param knitmd Flag for whether or not to knit; if FALSE and file already exists, don't knit it again
 #' @return a synapseClient::WikiPage entity object
-knitToFolderEntity <- function(file, parentId, folderName, owner=NULL, parentWikiId=NULL,
-                               wikiName=NULL, overwrite=FALSE, knitmd=TRUE, ...) {
+createAndKnitToFolderEntity <- function(file, parentId, folderName,
+                                        wikiName=NULL, overwrite=FALSE, knitmd=TRUE, ...) {
   
-  if (is.null(owner)) {
-    entity <- synapseClient::Folder(parentId=parentId, name=folderName)
-    entity <- synapseClient::synStore(entity, ...)
-    owner <- entity
-  }
-  
-  knitfile2synapse(file=file, owner=owner, parentWikiId=parentWikiId, wikiName=wikiName,
+  entity <- synapser::Folder(parentId=parentId, name=folderName)
+  entity <- synapser::synStore(entity, ...)
+
+  knitfile2synapse(file=file, owner=entity, wikiName=wikiName, 
                    overwrite=overwrite, knitmd=knitmd)
 }
