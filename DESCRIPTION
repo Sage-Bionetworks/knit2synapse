@@ -13,4 +13,5 @@ Imports: knitr,
     RCurl,
     stringr,
     tools,
-    synapseClient
+    synapser
+RoxygenNote: 6.0.1
