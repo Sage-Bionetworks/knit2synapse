@@ -1,10 +1,16 @@
 ## knit2synapse: Knit RMarkdown files to Synapse wikis.
 
-> This version has [rSynapseClient](https://github.com/Sage-Bionetworks/rSynapseClient) as a dependency. This package is no longer being updated. Newer releases of `knit2synapse` will use the new [synapser](https://github.com/Sage-Bionetworks/synapser) package.
+> This version has [synapser](https://github.com/Sage-Bionetworks/synapser) as a dependency. The last version of this package to use the [rSynapseClient](https://github.com/Sage-Bionetworks/rSynapseClient) is `v0.1`. 
 
 ### Installing
 
-Using `devtools`:
+First, install the `synapser` package:
+
+```
+install.packages("synapser", repos=c("https://sage-bionetworks.github.io/staging-ran", "http://cran.fhcrc.org"))
+```
+
+The, using `devtools`:
 
 ```
 devtools::install_github("Sage-Bionetworks/knit2synapse")
