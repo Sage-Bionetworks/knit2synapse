@@ -1,5 +1,7 @@
 ## knit2synapse: Knit RMarkdown files to Synapse wikis.
 
+> This version has [rSynapseClient](https://github.com/Sage-Bionetworks/rSynapseClient) as a dependency. This package is no longer being updated. Newer releases of `knit2synapse` will use the new [synapser](https://github.com/Sage-Bionetworks/synapser) package.
+
 ### Installing
 
 Using `devtools`:
