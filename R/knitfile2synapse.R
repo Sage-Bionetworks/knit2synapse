@@ -26,7 +26,7 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   
   ## IF OWNER IS CHARACTER, TRY TO GET FROM SYNAPSE
   if( is.character(owner) & length(owner) == 1 ){
-    owner <- synapseClient::synGet(owner, downloadFile=FALSE)
+    owner <- synapser::synGet(owner, downloadFile=FALSE)
   }
   
   #####
@@ -66,42 +66,32 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   } else {
     stop(sprintf("markdown file %s does not exist at this location: %s", basename(mdName), mdName))
   }
-    att <- list.files(knitPlotDir, full.names=TRUE)
-
+  att <- as.list(list.files(knitPlotDir, full.names=TRUE))
+  
+  ## New wiki page
+  
+  newWiki <- synapser::Wiki(owner=owner,
+                            title=wikiName,
+                            markdownFile=mdFile,
+                            attachments=att,
+                            parentWikiId=as.character(parentWikiId))
   ## Create/retrieve and store Wiki markdown to Synapse
-  w <- try(synapseClient::synGetWiki(owner),silent=T)
+  w <- try(synapser::synGetWiki(owner),silent=T)
   
   ## create new wiki if doesn't exist
-  if (class(w) == 'try-error') {
-    w <- synapseClient::WikiPage(owner=owner,
-                                 title=wikiName,
-                                 markdown=readChar(mdFile, file.info(mdFile)$size))
-  # delete existing wiki along with history
+  if (class(w)[1] == 'try-error') {
+    w <- newWiki
+    # delete existing wiki along with history
   } else if (overwrite) {
-    w <- synapseClient::synGetWiki(owner)
-    w <- synapseClient::synDelete(w)
-    w <- synapseClient::WikiPage(owner=owner,
-                                 title=wikiName,
-                                 markdown=readChar(mdFile, file.info(mdFile)$size))
+    w <- synapser::synDelete(w)
+    w <- newWiki
     # update existing wiki
   } else {
-    w <- synapseClient::synGetWiki(owner)    
-    w@properties$title <- wikiName
-    w@properties$markdown <- readChar(mdFile, file.info(mdFile)$size)
-  }
-  
-  ## Add the attachments
-  if (length(att) > 0 ){
-    w@attachments <- as.list(att)
-  }
-  
-  ## Set the parent wiki id, if one provided
-  if(!is.null(parentWikiId)){
-    w@properties$parentWikiId <- parentWikiId
+    w <- newWiki
   }
   
   ## Store to Synapse 
-  w <- synapseClient::synStore(w)
+  w <- synapser::synStore(w)
   
   # Undo changes to options
   knitr::opts_chunk$restore(old_knitr_opts)
