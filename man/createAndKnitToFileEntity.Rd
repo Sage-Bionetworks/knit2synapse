@@ -2,7 +2,7 @@
 % Please edit documentation in R/knitfile2synapse.R
 \name{createAndKnitToFileEntity}
 \alias{createAndKnitToFileEntity}
-\title{storeAndKnitToFileEntity}
+\title{createAndKnitToFileEntity}
 \usage{
 createAndKnitToFileEntity(file, parentId, fileName = NULL, wikiName = NULL,
   overwrite = FALSE, knitmd = TRUE, ...)
@@ -19,10 +19,6 @@ createAndKnitToFileEntity(file, parentId, fileName = NULL, wikiName = NULL,
 \item{overwrite}{Only if owner specified and parentWikiId is NULL - flag for whether or not to overwrite the previous root WikiPage (if it exists). This will remove the history of changes for this Wiki page.}
 
 \item{knitmd}{Flag for whether or not to knit; if FALSE and file already exists, don't knit it again}
-
-\item{owner}{A Synapse entity (or Synapse ID of an entity) which will own the resulting WikiPage (usually a Project, Folder, or File)}
-
-\item{parentWikiId}{If the resulting WikiPage is to be a subpage of another WikiPage, this is the ID for the parent WikiPage (NOTE: owner is still required)}
 }
 \value{
 a synapseClient::WikiPage object
