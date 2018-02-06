@@ -1,12 +1,13 @@
 Package: knit2synapse
 Type: Package
 Title: Knit RMarkdown to a Synapse Wiki page.
-Version: 0.0.0.9000
+Version: 0.1
 Date: 2015-04-27
 Authors@R: c(
     person("Brian", "Bot", email = "some@email.com", role = "cre"),
-    person("Kenneth", "Daily", email = "kenneth.daily@sagebase.org", role = "aut"))
-Maintainer: Kenneth Daily <yourfault@somewhere.net>
+    person("Kenneth", "Daily", email = "kenneth.daily@sagebase.org", role = "aut"),
+    person("Thanneer", "Perumal", email = "thanneer.perumal@sagebase.org", role = "aut"))
+Maintainer: Kenneth Daily <kenneth.daily@sagebase.org>
 Description: Knit RMarkdown to Synapse Wiki page.
 License: CC0
 Imports: knitr,
