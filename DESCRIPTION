@@ -14,5 +14,6 @@ Imports: knitr,
     RCurl,
     stringr,
     tools,
-    synapser
+    synapser,
+    reticulate
 RoxygenNote: 6.0.1
