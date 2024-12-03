@@ -7,7 +7,7 @@
 First, install the `synapser` package:
 
 ```
-install.packages("synapser", repos=c("https://sage-bionetworks.github.io/staging-ran", "http://cran.fhcrc.org"))
+install.packages("synapser", repos = c("http://ran.synapse.org", "https://cloud.r-project.org"))
 ```
 
 The, using `devtools`:
@@ -21,7 +21,7 @@ devtools::install_github("Sage-Bionetworks/knit2synapse")
 `knitfile2synapse(markdownfile, owner='syn123', parentWikiId = NULL, wikiName = NULL, overwrite = FALSE)`
 
 * `markdownfile`: a path to a markdown file (including RMarkdown files)
-* `owner`: The Entity where the Wiki page should go (this can be a `Project`, `File`, or `Folder` entity)
+* `owner`: The Entity where the Wiki page should go (this can be a synapser `Project`, `File`, or `Folder` object, or a string specifying the Synapse ID)
 * `parentWikiId`: If supplied, will make a sub-Wiki underneath this Wiki ID. Note that this is not a Synapse ID (does not start with `syn`, it is an integer)
 
 
