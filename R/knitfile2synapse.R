@@ -69,6 +69,11 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   att <- as.list(list.files(knitPlotDir, full.names=TRUE))
   
   # New wiki page
+
+  # Fix to avoid casting NULL parentWikiId to a string
+  if (!is.null(parentWikiId)) {
+    parentWikiId = as.character(parentWikiId)
+  }
   
   # A quick fix for SYNR-1270/SYNPY-689
   # https://sagebionetworks.jira.com/browse/SYNPY-689
@@ -78,14 +83,14 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
     newWiki <- synapser::Wiki(owner=owner,
                               title=wikiName,
                               markdownFile=mdFile,
-                              parentWikiId=as.character(parentWikiId))
+                              parentWikiId=parentWikiId)
   }
   else {
     newWiki <- synapser::Wiki(owner=owner,
                               title=wikiName,
                               markdownFile=mdFile,
                               attachments=att,
-                              parentWikiId=as.character(parentWikiId))
+                              parentWikiId=parentWikiId)
   }
 
   ## Create/retrieve and store Wiki markdown to Synapse
