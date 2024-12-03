@@ -2,13 +2,14 @@ Package: knit2synapse
 Type: Package
 Title: Knit RMarkdown to a Synapse Wiki page.
 Version: 2.0.2
-Date: 2018-05-02
+Date: 2024-12-02
 Authors@R: c(
   person("Brian", "Bot", email = "brian.bot@sagebionetworks.org", role = "cre"),
-  person("Kenneth", "Daily", email = "kenneth.daily@sagebionetworks.org", role = "aut"),
-  person("Thanneer", "Perumal", email = "thanneer.perumal@sagebionetworks.org", role = "aut"),
+  person("Kenneth", "Daily", role = "aut"),
+  person("Thanneer", "Perumal", role = "aut"),
+  person("Jaclyn", "Beck", email = "jaclyn.beck@sagebase.org", role = "aut"),
   person("Sage Bionetworks", role = c("cph")))
-Maintainer: Kenneth Daily <kenneth.daily@sagebionetworks.org>
+Maintainer: Jaclyn Beck <jaclyn.beck@sagebase.org>
 Description: Knit RMarkdown to a Synapse Wiki page.
 License: Apache License 2.0
 Encoding: UTF-8
@@ -18,8 +19,10 @@ Imports:
   stringr,
   tools,
   synapser
+Suggests: 
+  rmarkdown
 BugReports: https://github.com/Sage-Bionetworks/knit2synapse/issues
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr
 Additional_repositories:
-  https://sage-bionetworks.github.io/ran
+  http://ran.synapse.org

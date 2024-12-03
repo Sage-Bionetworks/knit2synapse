@@ -1,0 +1,214 @@
+---
+title: "Using knit2synapse"
+output: rmarkdown::html_vignette
+authors: 
+  - "Thanneer Malai Perumal"
+  - "Jaclyn Beck (Sage Bionetworks)"
+vignette: >
+  %\VignetteIndexEntry{example_usage}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(knit2synapse)
+```
+
+This package will knit an RMarkdown (Rmd) file into the format expected by Synapse Wikis, and upload the knitted file plus any images or other attachments necessary to render correctly on a wiki page in Synapse. The package has three options for doing so:
+
+1. `knitfile2synapse`: knit the Rmd file and upload the result to the wiki of an existing file, folder, or other entity on Synapse.
+2. `createAndKnitToFileEntity`: upload the raw Rmd file to Synapse, then add its knitted contents as the file's wiki. 
+3. `createAndKnitToFolderEntity`: create a new folder on Synapse, upload the raw Rmd file to that folder, and then upload its knitted contents to the wiki of the folder.
+
+This package can be installed with `devtools::install_github('Sage-Bionetworks/knit2synapse')`. 
+
+Before using knit2synapse functions, you will need to log in to Synapse:
+
+``` {r synapse_login, eval = FALSE}
+library(synapser)
+library(knit2synapse)
+
+synLogin()
+```
+
+---
+
+## knitfile2synapse
+
+### Overview
+
+This function knits your Rmd to a standard md file, saves all plots and images, and pushes the md and all the relevant plots in the md to a project, folder, or file wiki in Synapse. The project, folder, or file must already exist in Synapse. 
+  
+### Usage
+
+```
+knitfile2synapse(file, owner, 
+                 parentWikiId = NULL, 
+                 wikiName = NULL, 
+                 overwrite = FALSE, 
+                 knitmd = TRUE)
+```
+
+Arguments:
+
+`file`: The path to a markdown or RMarkdown file
+
+`owner`: The Entity where the Wiki page should go (this can be a Project, File, or Folder entity object, or a string with the synapse ID of that entity)
+
+`parentWikiId`: If supplied, will make a sub-Wiki underneath this Wiki ID. Note that this is not a Synapse ID (does not start with syn, it is an integer)
+
+`wikiName`: Optionally, you can provide names for your wiki pages/sub-pages
+    overwrite: If true, deletes all the previous versions of the exisitng wiki and overwrites it with new wiki (use it with caution)
+
+`knitmd`: If true, this will knit the md/Rmd file before wiki upload. If false, the file will not be knit and the function will try to find an existing knitted file in the directory.
+
+### Working examples
+
+```{r knit.file.2.synapse, eval = FALSE}
+# Using the Synapse ID of an existing file on Synapse
+knitfile2synapse(file = "example_file.Rmd",
+                 owner = "syn123",
+                 wikiName = "Synapse ID example for knit2synapse")
+
+
+# Using a Folder object
+folder <- Folder(name = "example_folder", parent = "syn456")
+folder <- synStore(folder)
+
+knitfile2synapse(file = "example_file.Rmd",
+                 owner = folder,
+                 wikiName = "Folder example for knit2synapse")
+```
+
+---
+
+## createAndKnitToFileEntity
+
+### Overview
+
+This function pushes an R markdown file to Synapse and populates the wiki for that file with its knitted contents
+
+### Usage
+
+```
+createAndKnitToFileEntity(file, parentId, 
+                          fileName = NULL, 
+                          wikiName = NULL, 
+                          overwrite = FALSE, 
+                          knitmd = TRUE, 
+                          ...)
+```
+
+Arguments:
+
+`file`: The path to a markdown or R markdown file
+
+`parentId`: The Entity where the Rmd should be stored (this can be a Project, or Folder object, or a string with the Synapse ID of the parent folder/project)
+
+`fileName`: The name of the file as it should appear on Synapse. If NULL, then the name of the markdown file will be used by default
+
+`wikiName`: Optionally, you can provide names for your wiki pages/sub-pages
+    
+`overwrite`: If true, deletes all the previous versions of the exisitng wiki and overwrites it with new wiki (use it with caution)
+    
+`knitmd`: If true, this will knit the md/Rmd file before wiki upload. If false, the file will not be knit and the function will try to find an existing knitted file in the directory.
+
+`...`: Optional paramters to synapser::synStore, for example used, executed, activity, activityName, activityDescription, etc...
+
+### Working examples
+
+```{r create.file.in.synapse, eval = FALSE}
+# Using the Synapse ID of an parent folder on Synapse
+createAndKnitToFileEntity(file = "example_file.Rmd",
+                          parentId = "syn123",
+                          fileName = "createFile_example.Rmd",
+                          wikiName = "Synapse ID example for knit2synapse")
+
+# Using a Folder object
+folder <- Folder(name = "example_folder", parent = "syn456")
+folder <- synStore(folder)
+
+createAndKnitToFileEntity(file = "example_file.Rmd",
+                          parentId = folder,
+                          filename = "createFile_example.Rmd",
+                          wikiName = "Folder example for knit2synapse")
+```
+
+---
+
+## createAndKnitToFolderEntity
+
+### Overview
+
+This function creates a folder on Synapse, pushes the R markdown file to the Synapse folder, and populates the Synapse folder wiki with the knitted contents of the R markdown file.
+
+### Usage
+
+```
+createAndKnitToFolderEntity(file, parentId, 
+                            folderName = NULL, 
+                            wikiName = NULL, 
+                            overwrite = FALSE, 
+                            knitmd = TRUE, 
+                            ...)
+```
+
+Arguments:
+
+`file`: The path to a markdown or RMarkdown file
+
+`parentId`: The Entity where the Rmd should be stored (this can be a Project, or Folder object, or a string with the Synapse ID of the parent folder/project)
+
+`folderName`: The name of the folder as it should appear on Synapse. If NULL, then the name of the markdown file will be used by default
+
+`wikiName`: Optionally, you can provide names for your wiki pages/sub-pages
+
+`overwrite`: If true, deletes all the previous versions of the exisitng wiki and overwrites it with new wiki (use it with caution)
+
+`knitmd`: If true, this will knit the md/Rmd file before wiki upload. If false, the file will not be knit and the function will try to find an existing knitted file in the directory.
+
+`...`: Optional paramters to synapser::synStore, for example used, executed, activity, activityName, activityDescription, etc...
+
+### Working examples
+
+```{r create.folder.in.synapse, eval = FALSE}
+# Using the Synapse ID of a parent folder on Synapse
+createAndKnitToFolderEntity(file = "example_file.Rmd",
+                            parentId = "syn789", 
+                            folderName = "Example for createFolder",
+                            wikiName = "Synapse ID example for knit2synapse")
+
+# Using a Folder object
+folder <- Folder(name = "example_parent_folder", parent = "syn999")
+folder <- synStore(folder)
+
+createAndKnitToFileEntity(file = "example_file.Rmd",
+                          parentId = folder,
+                          folderName = "Example for createFolder",
+                          wikiName = "Folder example for knit2synapse")
+```
+
+---
+
+## Finding a parent wiki ID
+
+If you want to add a sub-wiki to an existing wiki, you will need to find the ID of the wiki:
+
+``` {r get_wiki, eval = FALSE}
+# Without downloading the wiki
+wiki <- synGetWikiHeaders("syn123")
+print(wiki[[1]]$id)
+
+# This will download the wiki contents
+wiki <- synGetWiki("syn123")
+print(wiki$id)
+```
+
+The number printed out by this code will be the ID of the wiki, and can be used as the `parentWikiId` argument of `knitfile2synapse`. 
