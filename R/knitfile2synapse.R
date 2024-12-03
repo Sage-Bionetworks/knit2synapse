@@ -100,7 +100,7 @@ knitfile2synapse <- function(file, owner, parentWikiId=NULL, wikiName=NULL, over
   if (class(w)[1] == 'try-error') {
     w <- newWiki
     # delete existing wiki along with history
-  } else if (overwrite && is.na(parentWikiId)) {
+  } else if (overwrite && is.null(parentWikiId)) {
     w <- synapser::synDelete(w)
     w <- newWiki
     # update existing wiki
