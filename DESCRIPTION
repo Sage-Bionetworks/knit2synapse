@@ -16,3 +16,6 @@ Imports: knitr,
     tools,
     synapser
 RoxygenNote: 6.0.1
+Suggests: 
+    rmarkdown
+VignetteBuilder: knitr
